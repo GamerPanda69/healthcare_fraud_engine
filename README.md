@@ -1,4 +1,5 @@
 # healthcare_fraud_engine
+-> clone the repo to your machine
 -> create a virtual environment inside the folder healthcare_fraud_engine using command "python -m venv venv"(or python3 -m venv venv)
 -> activate it using "source venv/bin/activate"
 -> if (venv) is shown then you can start installing dependencies(requirements)
