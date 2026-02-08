@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# Docker
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+# Large files / directories
+anomaly/
+master_trained_data.csv
+# ML models & preprocessors
+*.joblib

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudGuard AI | Healthcare Claims</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        body { background: #0f172a; color: white; }
+    </style>
+</head>
+<body class="min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">
+                <i class="fas fa-shield-virus mr-2"></i>FraudGuard AI
+            </h1>
+            <p class="text-slate-400">Advanced Clinical & Statistical Anomaly Detection</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="glass p-6 rounded-2xl">
+                <h3 class="text-xl font-semibold mb-6 border-b border-white/10 pb-2">Claim Details</h3>
+                <form id="claimForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Diagnosis Code (ICD-9)</label>
+                        <input type="text" id="diag_code" value="460" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Claim Amount ($)</label>
+                        <input type="number" id="amt" value="400" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Stay (Days)</label>
+                            <input type="number" id="stay" value="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Patient Age</label>
+                            <input type="number" id="age" value="70" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 transition py-3 rounded-lg font-bold mt-4">
+                        Analyze Pattern
+                    </button>
+                </form>
+            </div>
+
+            <div id="resultCard" class="glass p-6 rounded-2xl hidden transition-all">
+                <h3 class="text-xl font-semibold mb-6 border-b border-white/10 pb-2">Analysis Result</h3>
+                <div id="statusBadge" class="inline-block px-4 py-1 rounded-full text-xs font-bold mb-4"></div>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Diagnosis:</span>
+                        <span id="res_diag" class="font-mono text-blue-300"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">AI Anomaly Score:</span>
+                        <span id="res_score" class="font-bold"></span>
+                    </div>
+                    <div class="p-4 rounded-lg bg-white/5 border border-white/10">
+                        <p id="res_msg" class="text-sm italic text-slate-300"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('claimForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                diag_code: document.getElementById('diag_code').value,
+                amt: parseFloat(document.getElementById('amt').value),
+                stay: parseInt(document.getElementById('stay').value),
+                age: parseInt(document.getElementById('age').value)
+            };
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            const card = document.getElementById('resultCard');
+            card.classList.remove('hidden');
+
+            document.getElementById('res_diag').innerText = result.diagnosis;
+            document.getElementById('res_score').innerText = result.statistical_check.anomaly_score;
+            document.getElementById('res_msg').innerText = result.clinical_check.message;
+
+            const badge = document.getElementById('statusBadge');
+            if(result.final_decision === 'FLAGGED') {
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-bold mb-4 bg-red-500/20 text-red-400 border border-red-500/50";
+                badge.innerText = "🚨 HIGH RISK FLAG";
+            } else {
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-bold mb-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/50";
+                badge.innerText = "✅ APPROVED";
+            }
+        });
+    </script>
+</body>
+</html>
