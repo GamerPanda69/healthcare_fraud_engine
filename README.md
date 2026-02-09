@@ -4,6 +4,9 @@
 -> activate it using "source venv/bin/activate"
 -> if (venv) is shown then you can start installing dependencies(requirements)
 -> run command "pip install -r requirements.txt"
+-> The already traied models are uploaded and is at the folder models. If you wanna retrain them follow the steps after deleting the joblib files inside models. "time consuming"
 ->login to kaggle and go to https://www.kaggle.com/datasets/rohitrox/healthcare-provider-fraud-detection-analysis?select=Test_Outpatientdata-1542969243754.csv
 -> download the dataset zip(8 csv files), create a folder called anomaly on the main(inside healthcare_fraud_engine) and extract those 8 files into it. 
-->run the application with the command "python3 -m uvicorn main:app --reload"
+->Train the model with the command python app.py/python3 app.py(depending on machine)
+->Once the training is done run the application with the command "python3 -m uvicorn main:app --reload"(if it didn't work, there cud be slight differences. Ask an LLM)
+->if you didn't delete the joblib files just run the application with command.
