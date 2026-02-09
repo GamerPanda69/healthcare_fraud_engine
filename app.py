@@ -1,3 +1,4 @@
+#app.py
 import pandas as pd
 import numpy as np
 import os
@@ -39,8 +40,8 @@ def load_data():
     df['StayDuration'] = (pd.to_datetime(df['ClaimEndDt']) - pd.to_datetime(df['ClaimStartDt'])).dt.days + 1
     df['Age'] = pd.to_datetime(df['ClaimStartDt']).dt.year - pd.to_datetime(df['DOB']).dt.year
     df['ProcCount'] = df[[f'ClmProcedureCode_{i}' for i in range(1, 7)]].notnull().sum(axis=1)
-    
-    return df[['InscClaimAmtReimbursed', 'DeductibleAmtPaid', 'StayDuration', 'Age', 'ProcCount']]
+    print("🔍 Available Columns:", df.columns.tolist())
+    return df[['InscClaimAmtReimbursed', 'DeductibleAmtPaid', 'StayDuration', 'Age', 'ProcCount', 'ClmAdmitDiagnosisCode']]
 
 def train():
    # Check if models already exist
@@ -50,8 +51,11 @@ def train():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"🖥️  Hardware Detection: {device.upper()}")
     
-    df_features = load_data()
-    X = df_features.fillna(0)
+    df_all = load_data()
+    df_all.to_csv(MASTER_FILE, index=False)
+    print(f"💾 {MASTER_FILE} saved for clinical norm extraction.")
+    extract_clinical_norms(df_all)
+    X = df_all.drop(columns=['ClmAdmitDiagnosisCode']).fillna(0)
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     
@@ -82,6 +86,18 @@ def train():
     joblib.dump(iforest, f"{MODEL_DIR}iforest.joblib")
     joblib.dump(autoenc, f"{MODEL_DIR}autoenc.joblib")
     print("✅ Dual-Brain Ensemble successfully saved to /models.")
+
+def extract_clinical_norms(df):
+    print("📊 Extracting Clinical Norms from 558k records...")
+    # Group by Diagnosis Code and calculate the 95th percentile for cost and stay
+    # We use the 95th percentile because anything above that is statistically 'rare'
+    norms = df.groupby('ClmAdmitDiagnosisCode').agg({
+        'InscClaimAmtReimbursed': lambda x: x.quantile(0.95),
+        'StayDuration': lambda x: x.quantile(0.95)
+    }).to_dict('index')
+    
+    joblib.dump(norms, "models/clinical_norms.joblib")
+    print("✅ Clinical Norms dynamic database saved.")
 
 if __name__ == "__main__":
     train()
