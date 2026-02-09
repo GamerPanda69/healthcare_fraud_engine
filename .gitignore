@@ -21,5 +21,3 @@ Thumbs.db
 # Large files / directories
 anomaly/
 master_trained_data.csv
-# ML models & preprocessors
-*.joblib
